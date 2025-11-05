@@ -12,10 +12,6 @@ export function generateTypeFile(
     name.charAt(0).toUpperCase() +
     name.slice(1).replace(/-([a-z])/g, (_, g) => g.toUpperCase());
 
-  const kebabName = formattedName
-    .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
-    .toLowerCase();
-
   const baseInterface = `import { IDataTable } from "./global"
 
 export interface I${formattedName} {
