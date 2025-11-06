@@ -1,9 +1,7 @@
 <template>
   <div class="min-h-screen flex flex-col md:flex-row">
     <!-- KIRI -->
-    <div
-      class="md:w-1/2 w-full bg-white flex flex-col justify-between p-10 border-b md:border-b-0 md:border-r border-gray-200"
-    >
+    <div class="md:w-1/2 w-full bg-white flex flex-col justify-between p-10 border-b md:border-b-0 md:border-r border-gray-200">
       <div>
         <h2 class="text-2xl font-bold text-gray-800 mb-2">
           📄 Generate Type File
@@ -14,9 +12,7 @@
 
         <!-- Nama Entity -->
         <div class="mb-5">
-          <label class="block font-semibold text-gray-700 mb-1"
-            >Nama Entity</label
-          >
+          <label class="block font-semibold text-gray-700 mb-1">Nama Entity</label>
           <input
             v-model="entityName"
             type="text"
@@ -25,91 +21,35 @@
           />
         </div>
 
-        <!-- Normal Fields -->
+        <!-- Normal Fields (pakai textarea) -->
         <div class="mb-6">
-          <div class="flex justify-between items-center mb-2">
-            <h3 class="font-semibold text-gray-700">Normal Fields</h3>
-            <button
-              @click="addNormalField"
-              class="text-blue-600 text-sm hover:underline"
-            >
-              + Tambah Field
-            </button>
-          </div>
-          <div
-            v-for="(field, i) in normalFields"
-            :key="i"
-            class="flex gap-2 mb-2"
-          >
-            <input
-              v-model="field.name"
-              placeholder="name"
-              class="border p-2 rounded w-1/2"
-            />
-            <input
-              v-model="field.type"
-              placeholder="string"
-              class="border p-2 rounded w-1/2"
-            />
-            <button @click="removeNormalField(i)" class="text-red-500">
-              ✖
-            </button>
-          </div>
+          <h3 class="font-semibold text-gray-700 mb-2">Normal Fields</h3>
+          <textarea
+            v-model="normalFieldsText"
+            rows="4"
+            placeholder="Contoh:\nid string\nisActive boolean"
+            class="border border-gray-300 rounded-lg w-full p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-sm"
+          ></textarea>
         </div>
 
-        <!-- Payload Fields -->
+        <!-- Payload Fields (pakai textarea) -->
         <div class="mb-6">
-          <div class="flex justify-between items-center mb-2">
-            <h3 class="font-semibold text-gray-700">Payload Fields</h3>
-            <button
-              @click="addPayloadField"
-              class="text-blue-600 text-sm hover:underline"
-            >
-              + Tambah Field
-            </button>
-          </div>
-          <div
-            v-for="(field, i) in payloadFields"
-            :key="i"
-            class="flex gap-2 mb-2"
-          >
-            <input
-              v-model="field.name"
-              placeholder="name"
-              class="border p-2 rounded w-1/2"
-            />
-            <input
-              v-model="field.type"
-              placeholder="string"
-              class="border p-2 rounded w-1/2"
-            />
-            <button @click="removePayloadField(i)" class="text-red-500">
-              ✖
-            </button>
-          </div>
+          <h3 class="font-semibold text-gray-700 mb-2">Payload Fields</h3>
+          <textarea
+            v-model="payloadFieldsText"
+            rows="3"
+            placeholder="Contoh:\nname string"
+            class="border border-gray-300 rounded-lg w-full p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-sm"
+          ></textarea>
         </div>
-
-        <!-- <button
-          @click="generate"
-          class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-sm w-full"
-        >
-          🚀 Generate
-        </button> -->
       </div>
     </div>
 
     <!-- KANAN -->
     <div class="md:w-1/2 w-full bg-[#1e1e1e] flex flex-col">
-      <div
-        class="px-5 py-3 border-b border-gray-700 flex items-center justify-between bg-[#252526]"
-      >
-        <h2 class="text-sm font-semibold text-gray-100">
-          🧠 Preview Type File
-        </h2>
-        <button
-          @click="copyCode"
-          class="text-xs text-gray-300 hover:text-white transition-all duration-150"
-        >
+      <div class="px-5 py-3 border-b border-gray-700 flex items-center justify-between bg-[#252526]">
+        <h2 class="text-sm font-semibold text-gray-100">🧠 Preview Type File</h2>
+        <button @click="copyCode" class="text-xs text-gray-300 hover:text-white transition-all duration-150">
           📋 Copy
         </button>
       </div>
@@ -136,41 +76,34 @@ import MonacoEditor from "monaco-editor-vue3";
 import { generateTypeFile } from "@/utils/generateTypeFile";
 
 const entityName = ref("EventCategory");
-const normalFields = ref([
-  { name: "id", type: "string" },
-  { name: "name", type: "string" },
-  { name: "isActive", type: "boolean" },
-]);
-const payloadFields = ref([{ name: "name", type: "string" }]);
+const normalFieldsText = ref("id string\nname string\nisActive boolean");
+const payloadFieldsText = ref("name string");
 const generatedCode = ref("");
 
-// 🧩 Fungsi generator
+function parseFields(text: string) {
+  return text
+    .split("\n")
+    .map(line => line.trim())
+    .filter(line => line) // buang baris kosong
+    .map(line => {
+      const [name, type] = line.split(/\s+/);
+      return { name, type };
+    })
+    // filter baris yang tidak punya keduanya
+    .filter((f): f is { name: string; type: string } => !!(f.name && f.type));
+}
+
 function generate() {
-  generatedCode.value = generateTypeFile(
-    entityName.value,
-    normalFields.value,
-    payloadFields.value
-  );
+  const normalFields = parseFields(normalFieldsText.value);
+  const payloadFields = parseFields(payloadFieldsText.value);
+
+  generatedCode.value = generateTypeFile(entityName.value, normalFields, payloadFields);
 }
 
-// 🧠 Auto-generate setiap perubahan
-watch([entityName, normalFields, payloadFields], generate, {
-  deep: true, // biar nested array/object juga ke-detect
-  immediate: true, // langsung generate di awal
+watch([entityName, normalFieldsText, payloadFieldsText], generate, {
+  deep: true,
+  immediate: true,
 });
-
-function addNormalField() {
-  normalFields.value.push({ name: "", type: "" });
-}
-function removeNormalField(i: number) {
-  normalFields.value.splice(i, 1);
-}
-function addPayloadField() {
-  payloadFields.value.push({ name: "", type: "" });
-}
-function removePayloadField(i: number) {
-  payloadFields.value.splice(i, 1);
-}
 
 function copyCode() {
   navigator.clipboard.writeText(generatedCode.value);

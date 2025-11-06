@@ -14,6 +14,11 @@
         class="font-semibold text-gray-700 hover:text-blue-600"
         >📄 Type</RouterLink
       >
+      <RouterLink
+        to="/form"
+        class="font-semibold text-gray-700 hover:text-blue-600"
+        >⚙️ Form</RouterLink
+      >
     </nav>
 
     <main class="p-6">
