@@ -72,8 +72,8 @@
             <div class="flex bg-[#252526] border-b border-gray-700 overflow-x-auto">
                 <button v-for="(file, i) in generatedFiles" :key="file.filename" @click="activeTab = i"
                     class="px-4 py-2 text-xs whitespace-nowrap transition-all duration-150" :class="activeTab === i
-                            ? 'bg-[#1e1e1e] text-white border-t-2 border-blue-500'
-                            : 'text-gray-400 hover:text-gray-200'
+                        ? 'bg-[#1e1e1e] text-white border-t-2 border-blue-500'
+                        : 'text-gray-400 hover:text-gray-200'
                         ">
                     📄 {{ file.filename }}
                 </button>

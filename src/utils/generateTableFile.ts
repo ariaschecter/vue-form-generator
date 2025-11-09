@@ -1,4 +1,4 @@
-export function generateFormBase(title: string, payloadFields: { name: string; type: string }[] = []) {
+export function generateFormBase(title: string, payloadFields: { name: string; type: string }[] = [], storeName: string) {
     // generate isi reactive `single`
     const reactiveFields = payloadFields
         .map((f) => `    ${f.name}: '' as ${f.type === 'number' ? 'number' : 'string'},`)
@@ -24,9 +24,17 @@ export function generateFormBase(title: string, payloadFields: { name: string; t
         .map((f) => `    single.${f.name} = '';`)
         .join("\n");
 
+    // ubah awalan storeName jadi huruf kecil (camelCase)
+    const camelStoreName = storeName.charAt(0).toLowerCase() + storeName.slice(1);
+
+    const kebabStoreName = storeName
+        .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+        .replace(/([A-Z])([A-Z][a-z])/g, "$1-$2")
+        .toLowerCase();
+
     return `<script setup lang="ts">
 import { onMounted, reactive, watch, ref, computed } from 'vue';
-import { useBuyHistoryStore } from "@/stores/progress-proyek/buy-history";
+import { use${storeName}Store } from "@/stores/${camelStoreName}";
 import { CustomModal, DataTable, ModalBody, ModalFooter, SelectSingle } from '@/components/main';
 import { axiosHandleError, initializeAppPlugins, loaderHide, loaderShow } from '@/plugins/global';
 import { ISelectOption } from '@/types/global';
@@ -35,8 +43,9 @@ import { useVuelidate } from '@vuelidate/core';
 import { required } from '@vuelidate/validators';
 import Swal from 'sweetalert2';
 import { toast } from 'vue3-toastify';
+import { I${storeName}Detail } from '@/types/${kebabStoreName}';
 
-const dataStore = useBuyHistoryStore();
+const dataStore = use${storeName}Store();
 const selectListStore = useSelectListStore();
 
 const modalForm = ref<InstanceType<typeof CustomModal> | null>(null);

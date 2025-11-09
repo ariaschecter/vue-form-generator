@@ -4,30 +4,33 @@
  */
 
 export function generatePiniaFull(
-  name: string,
-  prefix: string,
-  resource: string,
-  columns: {
-    text: string;
-    sortBy: string;
-    sortColumn: boolean;
-    class: string;
-  }[] = []
+    name: string,
+    prefix: string,
+    resource: string,
+    columns: {
+        text: string;
+        sortBy: string;
+        sortColumn: boolean;
+        class: string;
+    }[] = []
 ): string {
-  const formattedName = name.charAt(0).toUpperCase() + name.slice(1);
-  const kebabName = name
-    .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
-    .replace(/([A-Z])([A-Z][a-z])/g, "$1-$2")
-    .toLowerCase();
+    const formattedName = name.charAt(0).toUpperCase() + name.slice(1);
+    const kebabName = name
+        .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+        .replace(/([A-Z])([A-Z][a-z])/g, "$1-$2")
+        .toLowerCase();
 
-  const columnCode = columns
-    .map(
-      (col) =>
-        `      { text: '${col.text}', sortBy: '${col.sortBy}', sortColumn: ${col.sortColumn}, class: '${col.class}' }`
-    )
-    .join(",\n");
+    // ubah awalan storeName jadi huruf kecil (camelCase)
+    const camelStoreName = formattedName.charAt(0).toLowerCase() + formattedName.slice(1);
 
-  return `import { defineStore } from 'pinia'
+    const columnCode = columns
+        .map(
+            (col) =>
+                `            { text: '${col.text}', sortBy: '${col.sortBy}', sortColumn: ${col.sortColumn}, class: '${col.class}' }`
+        )
+        .join(",\n");
+
+    return `import { defineStore } from 'pinia'
 import { reactive } from 'vue'
 import api from '@services/api'
 import type { IDataTable${formattedName}, ICreate${formattedName}Payload, IEdit${formattedName}Payload, I${formattedName} } from '@/types/${kebabName}'
@@ -36,11 +39,13 @@ import { axiosHandleError } from '@/plugins/global'
 const prefix = '${prefix}'
 const resource = '${resource}'
 
-export const use${formattedName}Store = defineStore('${formattedName}', () => {
+export const use${formattedName}Store = defineStore('${camelStoreName}', () => {
     // State
     const table = reactive<IDataTable${formattedName}>({
         column: [
-${columnCode}
+            { text: "NO", sortBy: "id", sortColumn: true, class: "text-center" },
+${columnCode},
+            { text: "Aksi", sortBy: "", sortColumn: false, class: "text-center" },
         ],
         data: [],
         showPerPage: 10,
