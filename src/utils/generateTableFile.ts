@@ -1,27 +1,53 @@
-export function generateFormBase(title: string, payloadFields: { name: string; type: string }[] = [], storeName: string) {
+import { generateFormFile } from "./generateFormFile";
+
+export function generateTableBase(
+    title: string,
+    storeName: string,
+    columns: {
+        text: string;
+        sortBy: string;
+        sortColumn: boolean;
+        class: string;
+        model: string;
+    }[] = [],
+    fields: {
+        name: string;
+        label: string;
+        type: string;
+        placeholder: string;
+        validationMessage: string;
+        class: string;
+        required: boolean;
+    }[]
+) {
     // generate isi reactive `single`
-    const reactiveFields = payloadFields
+    const reactiveFields = fields
         .map((f) => `    ${f.name}: '' as ${f.type === 'number' ? 'number' : 'string'},`)
         .join("\n");
 
     // generate validation rules
-    const validationRules = payloadFields
+    const validationRules = fields
         .map((f) => `        ${f.name}: { required },`)
         .join("\n");
 
     // generate payload content
-    const payloadContent = payloadFields
+    const payloadContent = fields
         .map((f) => `        ${f.name}: single.${f.name},`)
         .join("\n");
 
     // generate edit data assignment
-    const editAssignments = payloadFields
+    const editAssignments = fields
         .map((f) => `        single.${f.name} = data.${f.name}`)
         .join("\n");
 
     // generate reset() clear
-    const resetFields = payloadFields
+    const resetFields = fields
         .map((f) => `    single.${f.name} = '';`)
+        .join("\n");
+
+    // generate list data table
+    const listTableColumn = columns
+        .map((c) => `                                        <td class="text-center">{{ context.${c.model} }}</td>`)
         .join("\n");
 
     // ubah awalan storeName jadi huruf kecil (camelCase)
@@ -31,6 +57,12 @@ export function generateFormBase(title: string, payloadFields: { name: string; t
         .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
         .replace(/([A-Z])([A-Z][a-z])/g, "$1-$2")
         .toLowerCase();
+
+
+    const generatedFormFields = generateFormFile(fields)
+        .split('\n')
+        .map((line, i) => (i === 0 ? line : ' '.repeat(12) + line))
+        .join('\n');
 
     return `<script setup lang="ts">
 import { onMounted, reactive, watch, ref, computed } from 'vue';
@@ -43,6 +75,7 @@ import { useVuelidate } from '@vuelidate/core';
 import { required } from '@vuelidate/validators';
 import Swal from 'sweetalert2';
 import { toast } from 'vue3-toastify';
+import { CloseIcon, EditIcon, TrashIcon } from '@/components/icons';
 import { I${storeName}Detail } from '@/types/${kebabStoreName}';
 
 const dataStore = use${storeName}Store();
@@ -117,13 +150,14 @@ const edit = async (id: string | number) => {
         loaderShow()
 
         const res = await dataStore.show(id);
-        const data = res.data.data as IBankDetail
+        const data = res.data.data as I${storeName}Detail
 
         reset();
 
         flag.value = 'edit';
         single.id = data.id;
 ${editAssignments}
+
         modalForm.value?.show();
     } catch (error) {
         axiosHandleError(error)
@@ -188,6 +222,9 @@ ${resetFields}
                                 <p class="card-label mb-2 p-0">${title}</p>
                                 <p class="card-desc p-0">Berikut Merupakan ${title}</p>
                             </div>
+                            <button type="button" class="btn h-50 btn-primary text-white" @click="showModalAdd">
+                                Tambah Data
+                            </button>
                         </div>
 
                         <div class="card-body p-0 pt-5">
@@ -203,7 +240,37 @@ ${resetFields}
                                             {{ (dataStore.table.currentPage - 1) * dataStore.table.showPerPage +
                                                 index + 1 }}
                                         </td>
-                                        <td class="text-left">{{ context.name }}</td>
+${listTableColumn}
+                                        <td class="text-center">
+                                            <div class="dropdown" style="position:static">
+                                                <a class="btn btn-sm btn-secondary dropdown-toggle" href="#"
+                                                    role="button" id="dropdownMenuLink" data-bs-toggle="dropdown"
+                                                    aria-expanded="false">
+                                                    Aksi
+                                                </a>
+
+                                                <ul class="dropdown-menu dropdown-menu-end"
+                                                    aria-labelledby="dropdownMenuLink">
+                                                    <li>
+                                                        <button class="dropdown-item" @click="edit(context?.id)">
+                                                            <span class="svg-icon svg-icon-primary svg-icon-1">
+                                                                <EditIcon />
+                                                            </span>
+                                                            Edit
+                                                        </button>
+                                                    </li>
+                                                    <li>
+                                                        <button class="dropdown-item"
+                                                            @click="showModalDelete(context?.id)">
+                                                            <span class="svg-icon svg-icon-danger svg-icon-2x">
+                                                                <TrashIcon />
+                                                            </span>
+                                                            Delete
+                                                        </button>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
                                     </tr>
                                 </template>
                             </DataTable>
@@ -212,6 +279,19 @@ ${resetFields}
                 </div>
             </div>
         </div>
+
+        <CustomModal ref="modalForm" :title="\`\${flag === 'insert' ? 'Tambah Data ${title}' : 'Edit Data ${title}'}\`" :subtitle="\`Silahkan lengkapi form berikut untuk
+                \${flag === 'insert' ? 'menambah' : 'memperbarui'} data\`" size="">
+            <ModalBody>
+${generatedFormFields}
+            </ModalBody>
+            <ModalFooter>
+                <button type="button" class="btn btn-light text-gray-700" data-bs-dismiss="modal">Batal</button>
+                <button class="btn bg-app-primary" type="button" @click="saveData">
+                    <span class="indicator-label text-white">Simpan Data</span>
+                </button>
+            </ModalFooter>
+        </CustomModal>
     </div>
 </template>
 
