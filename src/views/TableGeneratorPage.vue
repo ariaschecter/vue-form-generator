@@ -202,13 +202,13 @@
             </div>
 
             <div class="flex-1 relative">
-                <MonacoEditor v-if="generatedFiles[activeTab]" :key="generatedFiles[activeTab]?.filename"
-                    v-model:value="activeFile" :language="generatedFiles[activeTab]?.language" theme="vs-dark"
-                    class="absolute inset-0" :options="{
+                <MonacoEditor v-if="currentFileContent" :value="currentFileContent" :language="currentFileLanguage"
+                    theme="vs-dark" class="absolute inset-0" :options="{
                         readOnly: true,
                         fontSize: 13,
                         minimap: { enabled: false },
                         wordWrap: 'off',
+                        automaticLayout: true,
                     }" />
             </div>
         </div>
@@ -233,13 +233,13 @@
             </div>
 
             <div class="relative h-[70vh]">
-                <MonacoEditor v-if="generatedFiles[activeTab]" :key="generatedFiles[activeTab]?.filename"
-                    v-model:value="activeFile" :language="generatedFiles[activeTab]?.language" theme="vs-dark"
-                    class="absolute inset-0" :options="{
+                <MonacoEditor v-if="currentFileContent" :value="currentFileContent" :language="currentFileLanguage"
+                    theme="vs-dark" class="absolute inset-0" :options="{
                         readOnly: true,
                         fontSize: 13,
                         minimap: { enabled: false },
                         wordWrap: 'off',
+                        automaticLayout: true,
                     }" />
             </div>
         </div>
@@ -288,19 +288,18 @@ const fields = ref([
 const generatedFiles = ref<{ filename: string; language: string; content: string }[]>([]);
 const activeTab = ref(0);
 
-// ========== PARSER ==========
-const activeFile = computed({
-    get() {
-        return generatedFiles.value[activeTab.value];
-    },
-    set(val) {
-        if (!val) return;
-        const file = generatedFiles.value[activeTab.value];
-        if (file) file.content = val.content ?? file.content;
-    }
+// ========== COMPUTED FOR MONACO ==========
+const currentFileContent = computed(() => {
+    const file = generatedFiles.value[activeTab.value];
+    return file ? file.content : '';
 });
 
+const currentFileLanguage = computed(() => {
+    const file = generatedFiles.value[activeTab.value];
+    return file ? file.language : 'typescript';
+});
 
+// ========== PARSER ==========
 function parseFields(text: string) {
     return text
         .split("\n")
