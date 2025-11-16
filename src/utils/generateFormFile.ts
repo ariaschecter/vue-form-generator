@@ -23,7 +23,7 @@ export function generateFormFile(
         class="form-control"
         rows="5"
         placeholder="${f.placeholder}"
-    ></textarea>`;
+    />`;
 
             case "number":
                 return `
@@ -65,13 +65,21 @@ export function generateFormFile(
 
             case "file":
                 return `
-      `;
+    <FileUpload :title="\`Drop files here or click to upload.\`"
+        :description="\`${f.placeholder}\`"
+        :selected-files="single.${f.name}" @update:selected-files="(file: File[]) => single.${f.name} = file"
+        :max-files="10" :allowed-extensions="['.jpg', '.png', '.jpeg']"
+        :max-size-megabyte="10" />`;
 
-            case "radio":
-            case "checkbox":
-            case "select":
+            case "single-select":
+            case "multiple-select":
+                const capitalizeFormatted = f.name.charAt(0).toUpperCase() + f.name.slice(1);
                 return `
-      `;
+    <${f.type == 'single-select' ? `SelectSingle` : `SelectMultiple`} v-model="single.${f.name}" :placeholder="'${f.placeholder}'"
+        :options="selectListStore.selectList${capitalizeFormatted}"
+        @on-search="selectListStore.getSelectList${capitalizeFormatted}"
+        :loading="selectListStore.selectListLoading" :show_search="true"
+        :serverside="true" :show_button_clear="true" />`;
 
             default:
                 // TEXT (default)

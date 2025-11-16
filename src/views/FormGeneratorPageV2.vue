@@ -51,6 +51,9 @@
                                     <option value="month">Month</option>
                                     <option value="year">Year</option>
                                     <option value="time">Time</option>
+                                    <option value="file">File</option>
+                                    <option value="single-select">Single Select</option>
+                                    <option value="multiple-select">Multiple Select</option>
                                 </select>
                             </div>
 
@@ -124,7 +127,9 @@ const fields = ref([
 const generatedCode = ref("");
 
 function generate() {
-    generatedCode.value = generateFormFile(fields.value);
+    generatedCode.value = `<template>${generateFormFile(fields.value)}
+</template>
+    `;
 }
 
 watch([fields], generate, { deep: true, immediate: true });

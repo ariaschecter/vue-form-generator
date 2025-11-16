@@ -114,7 +114,7 @@
 import { ref, watch } from "vue";
 import draggable from "vuedraggable";
 import MonacoEditor from "monaco-editor-vue3";
-import { generatePiniaFull } from "@/utils/generatePiniaFull";
+import { generateStoreFile } from "@/utils/generateStoreFile";
 
 const storeName = ref("FormSubmission");
 const prefix = ref("api-web");
@@ -130,7 +130,7 @@ const generatedCode = ref("");
 
 // generate code (dengan kolom)
 function generate() {
-    generatedCode.value = generatePiniaFull(
+    generatedCode.value = generateStoreFile(
         storeName.value,
         prefix.value,
         resource.value,

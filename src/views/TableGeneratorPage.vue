@@ -89,7 +89,7 @@
                                     <option value="month">Month</option>
                                     <option value="year">Year</option>
                                     <option value="time">Time</option>
-                                    <option value="radio">Radio</option>
+                                    <option value="file">File</option>
                                     <option value="single-select">Single Select</option>
                                     <option value="multiple-select">Multiple Select</option>
                                 </select>
@@ -253,8 +253,9 @@ import { ref, watch, nextTick, onMounted } from "vue";
 import draggable from "vuedraggable";
 import MonacoEditor from "monaco-editor-vue3";
 import { generateTableBase } from "@/utils/generateTableFile";
-import { generatePiniaFull } from "@/utils/generatePiniaFull";
+import { generateStoreFile } from "@/utils/generateStoreFile";
 import { generateTypeFile } from "@/utils/generateTypeFile";
+import { generateNewTabFormFile } from "@/utils/generateNewTabFormFile";
 
 // ========== STATE ==========
 const formTitle = ref("Karyawan");
@@ -303,15 +304,17 @@ function parseFields(text: string) {
 // ========== GENERATE ==========
 async function generate() {
     const indexCode = generateTableBase(formTitle.value, storeName.value, columns.value, fields.value);
-    const storeCode = generatePiniaFull(storeName.value, prefix.value, resource.value, columns.value);
+    const storeCode = generateStoreFile(storeName.value, prefix.value, resource.value, columns.value);
 
     const normalFields = parseFields(normalFieldsText.value);
     const payloadFields = parseFields(payloadFieldsTextType.value);
     const typeCode = generateTypeFile(storeName.value, normalFields, payloadFields);
+    const newFormTab = generateNewTabFormFile(formTitle.value, storeName.value, fields.value);
 
     await nextTick();
     generatedFiles.value = [
         { filename: `index.vue`, language: "html", content: indexCode },
+        { filename: `form.vue`, language: "html", content: newFormTab },
         { filename: `store.ts`, language: "typescript", content: storeCode },
         { filename: `type.ts`, language: "typescript", content: typeCode },
     ];

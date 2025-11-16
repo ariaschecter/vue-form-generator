@@ -67,7 +67,7 @@ export function generateTableBase(
     return `<script setup lang="ts">
 import { onMounted, reactive, watch, ref, computed } from 'vue';
 import { use${storeName}Store } from "@/stores/${camelStoreName}";
-import { CustomModal, DataTable, ModalBody, ModalFooter, SelectSingle } from '@/components/main';
+import { CustomModal, DataTable, ModalBody, ModalFooter, SelectSingle, SelectMultiple, FileUpload } from '@/components/main';
 import { axiosHandleError, initializeAppPlugins, loaderHide, loaderShow } from '@/plugins/global';
 import { ISelectOption } from '@/types/global';
 import { useSelectListStore } from '@/stores/selectList';

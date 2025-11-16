@@ -3,7 +3,7 @@
  * berdasarkan nama store, prefix API, dan resource path.
  */
 
-export function generatePiniaFull(
+export function generateStoreFile(
     name: string,
     prefix: string,
     resource: string,
@@ -140,6 +140,10 @@ ${columnCode},
     async function changeStatus(id: string | number) {
         return api().put(\`\${prefix}\${resource}/\${id}/change-status\`)
     }
+    
+    async function destroy(id: string | number) {
+        return api().delete(\`\${prefix}\${resource}/\${id}\`)
+    }
 
     return {
         table,
@@ -157,6 +161,7 @@ ${columnCode},
         show,
         changeStatus,
         update,
+        destroy,
     }
 })`;
 }
