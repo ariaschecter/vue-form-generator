@@ -121,9 +121,9 @@ const prefix = ref("api-web");
 const resource = ref("/form-submission");
 
 const columns = ref([
-    { id: 1, text: "NO", sortBy: "id", sortColumn: true, class: "text-center" },
-    { id: 2, text: "Nama", sortBy: "name", sortColumn: true, class: "w-200px" },
-    { id: 3, text: "Aksi", sortBy: "", sortColumn: false, class: "text-center" },
+    { id: 1, text: "NO", sortBy: "id", sortColumn: true, class: "text-center", model: '' },
+    { id: 2, text: "Nama", sortBy: "name", sortColumn: true, class: "w-200px", model: '' },
+    { id: 3, text: "Aksi", sortBy: "", sortColumn: false, class: "text-center", model: '' },
 ]);
 
 const generatedCode = ref("");
@@ -151,6 +151,7 @@ function addColumn() {
         sortBy: "",
         sortColumn: false,
         class: "",
+        model: ""
     });
 }
 

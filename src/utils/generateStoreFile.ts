@@ -12,7 +12,7 @@ export function generateStoreFile(
         sortBy: string;
         sortColumn: boolean;
         class: string;
-        model: string;
+        model?: string;
     }[] = []
 ): string {
     const formattedName = name.charAt(0).toUpperCase() + name.slice(1);

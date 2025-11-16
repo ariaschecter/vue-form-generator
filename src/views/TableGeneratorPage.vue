@@ -202,9 +202,9 @@
             </div>
 
             <div class="flex-1 relative">
-                <MonacoEditor v-if="generatedFiles[activeTab]" :key="generatedFiles[activeTab].filename"
-                    v-model:value="generatedFiles[activeTab].content" :language="generatedFiles[activeTab].language"
-                    theme="vs-dark" class="absolute inset-0" :options="{
+                <MonacoEditor v-if="generatedFiles[activeTab]" :key="generatedFiles[activeTab]?.filename"
+                    v-model:value="activeFile" :language="generatedFiles[activeTab]?.language" theme="vs-dark"
+                    class="absolute inset-0" :options="{
                         readOnly: true,
                         fontSize: 13,
                         minimap: { enabled: false },
@@ -233,9 +233,9 @@
             </div>
 
             <div class="relative h-[70vh]">
-                <MonacoEditor v-if="generatedFiles[activeTab]" :key="generatedFiles[activeTab].filename"
-                    v-model:value="generatedFiles[activeTab].content" :language="generatedFiles[activeTab].language"
-                    theme="vs-dark" class="absolute inset-0" :options="{
+                <MonacoEditor v-if="generatedFiles[activeTab]" :key="generatedFiles[activeTab]?.filename"
+                    v-model:value="activeFile" :language="generatedFiles[activeTab]?.language" theme="vs-dark"
+                    class="absolute inset-0" :options="{
                         readOnly: true,
                         fontSize: 13,
                         minimap: { enabled: false },
@@ -249,7 +249,7 @@
 
 
 <script setup lang="ts">
-import { ref, watch, nextTick, onMounted } from "vue";
+import { ref, watch, nextTick, onMounted, computed } from "vue";
 import draggable from "vuedraggable";
 import MonacoEditor from "monaco-editor-vue3";
 import { generateTableBase } from "@/utils/generateTableFile";
@@ -289,6 +289,18 @@ const generatedFiles = ref<{ filename: string; language: string; content: string
 const activeTab = ref(0);
 
 // ========== PARSER ==========
+const activeFile = computed({
+    get() {
+        return generatedFiles.value[activeTab.value];
+    },
+    set(val) {
+        if (!val) return;
+        const file = generatedFiles.value[activeTab.value];
+        if (file) file.content = val.content ?? file.content;
+    }
+});
+
+
 function parseFields(text: string) {
     return text
         .split("\n")
@@ -296,10 +308,14 @@ function parseFields(text: string) {
         .filter(line => line)
         .map(line => {
             const [name, type] = line.split(/\s+/);
-            return { name, type };
+            return {
+                name: name ?? "",
+                type: type ?? "string",
+            };
         })
-        .filter(f => f.name && f.type);
+        .filter(f => f.name !== "");
 }
+
 
 // ========== GENERATE ==========
 async function generate() {

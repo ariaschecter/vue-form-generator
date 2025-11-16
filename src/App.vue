@@ -5,7 +5,7 @@
             <RouterLink to="/store" class="font-semibold text-gray-700 hover:text-blue-600">📦 Store</RouterLink>
             <RouterLink to="/type" class="font-semibold text-gray-700 hover:text-blue-600">📄 Type</RouterLink>
             <RouterLink to="/form-v2" class="font-semibold text-gray-700 hover:text-blue-600">⚙️ Form</RouterLink>
-            <RouterLink to="/table" class="font-semibold text-gray-700 hover:text-blue-600">⚙️ Table</RouterLink>
+            <RouterLink to="/table" class="font-semibold text-gray-700 hover:text-blue-600">🧩 Table</RouterLink>
         </nav>
 
         <main class="p-6">
