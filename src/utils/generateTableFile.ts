@@ -287,7 +287,7 @@ ${generatedFormFields}
             </ModalBody>
             <ModalFooter>
                 <button type="button" class="btn btn-light text-gray-700" data-bs-dismiss="modal">Batal</button>
-                <button class="btn bg-app-primary" type="button" @click="saveData">
+                <button class="btn btn-primary" type="button" @click="saveData">
                     <span class="indicator-label text-white">Simpan Data</span>
                 </button>
             </ModalFooter>
