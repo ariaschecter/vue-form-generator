@@ -127,8 +127,8 @@
                             <div>
                                 <label class="block text-sm font-medium mb-1">Validation Message</label>
                                 <input v-model="field.validationMessage" type="text"
-                                    class="border border-gray-300 rounded-lg w-full p-2"
-                                    placeholder="API Key tidak boleh kosong" />
+                                    class="border border-gray-300 rounded-lg w-full p-2" placeholder="disabled"
+                                    disabled />
                             </div>
 
                             <div>
@@ -159,9 +159,6 @@
                 <div>
                     <div class="flex justify-between items-center mb-2">
                         <h3 class="font-semibold text-gray-700">🧱 Table Columns</h3>
-                        <button @click="addColumn" class="text-blue-600 text-sm hover:underline">
-                            + Tambah Kolom
-                        </button>
                     </div>
 
                     <draggable v-model="columns" item-key="id" handle=".drag-handle" animation="200"
@@ -187,7 +184,7 @@
                                     title="Hapus kolom">
                                     <Copy />
                                 </button>
-                                <button @click="removeColumn(i)"
+                                <button @click="removeColumn(i)" v-if="columns.length > 1"
                                     class="text-red-500 hover:text-red-700 transition flex items-center justify-center cursor-pointer"
                                     title="Hapus kolom">
                                     <X />
@@ -195,6 +192,12 @@
                             </div>
                         </template>
                     </draggable>
+
+                    <div class="flex justify-end mt-3">
+                        <button @click="addColumn" class="text-slate-700 text-sm hover:underline cursor-pointer">
+                            + Tambah Kolom
+                        </button>
+                    </div>
                 </div>
 
                 <hr class="my-4">
@@ -205,13 +208,13 @@
 
                     <div class="mb-4">
                         <label class="block font-semibold text-gray-700 mb-1">Normal Fields</label>
-                        <textarea v-model="normalFieldsText" rows="4" placeholder="Contoh:\nid string\nname string"
+                        <textarea v-model="normalFieldsText" rows="10" placeholder="Contoh:\nid string\nname string"
                             class="border border-gray-300 rounded-lg w-full p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-sm"></textarea>
                     </div>
 
                     <div>
                         <label class="block font-semibold text-gray-700 mb-1">Payload Fields (Types)</label>
-                        <textarea v-model="payloadFieldsTextType" rows="3" placeholder="Contoh:\nname string"
+                        <textarea v-model="payloadFieldsTextType" rows="10" placeholder="Contoh:\nname string"
                             class="border border-gray-300 rounded-lg w-full p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-sm"></textarea>
                     </div>
                 </div>
@@ -300,8 +303,8 @@ const storeName = ref("Employee");
 const prefix = ref("api-web");
 const resource = ref("/employee");
 const columns = ref([{ id: 1, text: "Nama", sortBy: "name", sortColumn: true, class: "w-200px", model: 'name' }]);
-const normalFieldsText = ref("id string\nname string\nposition string");
-const payloadFieldsTextType = ref("name string\nposition string");
+const normalFieldsText = ref("id string\nname string\n");
+const payloadFieldsTextType = ref("name string\n");
 
 
 onMounted(() => {
@@ -325,7 +328,7 @@ const fields = ref<Field[]>([
         label: "Nama",
         type: "text",
         placeholder: "Masukkan Nama",
-        validationMessage: "Nama tidak boleh kosong",
+        validationMessage: "",
         class: "col-12",
         required: true,
     },

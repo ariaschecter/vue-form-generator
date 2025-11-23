@@ -72,8 +72,8 @@
                             <div>
                                 <label class="block text-sm font-medium mb-1">Validation Message</label>
                                 <input v-model="field.validationMessage" type="text"
-                                    class="border border-gray-300 rounded-lg w-full p-2"
-                                    placeholder="API Key tidak boleh kosong" />
+                                    class="border border-gray-300 rounded-lg w-full p-2" placeholder="disabled"
+                                    disabled />
                             </div>
 
                             <div>
@@ -130,7 +130,7 @@ const fields = ref([
         label: "Nama",
         type: "text",
         placeholder: "Masukkan Nama",
-        validationMessage: "Nama tidak boleh kosong",
+        validationMessage: "",
         class: "col-12",
         required: true,
     },
