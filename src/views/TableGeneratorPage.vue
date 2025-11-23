@@ -53,17 +53,38 @@
                 <div>
                     <div class="flex justify-between items-center mb-2">
                         <h3 class="font-semibold text-gray-700">🧱 Form Fields</h3>
-                        <button @click="addField" class="text-blue-600 text-sm hover:underline">
-                            + Tambah Field
-                        </button>
                     </div>
 
                     <div v-for="(field, i) in fields" :key="i"
                         class="border rounded-lg p-4 mb-3 bg-gray-50 hover:bg-gray-100 transition">
                         <div class="flex justify-between items-center mb-3">
                             <h4 class="font-semibold text-gray-700">Field {{ i + 1 }}</h4>
-                            <button @click="removeField(i)" class="text-red-500 text-sm hover:underline">✖
-                                Hapus</button>
+                            <div class="flex space-x-2">
+                                <div class="p-1 flex space-x-2 me-5">
+                                    <!-- Move Up -->
+                                    <button @click="moveUp(i)" v-if="fields.length > 1 && i != 0"
+                                        class="w-7 h-7 flex items-center justify-center rounded-full bg-slate-200 hover:bg-slate-300 cursor-pointer"
+                                        title="Pindah ke atas">
+                                        <MoveUp class="w-4 h-4 text-slate-700" />
+                                    </button>
+
+                                    <!-- Move Down -->
+                                    <button @click="moveDown(i)" v-if="fields.length > 1 && i != fields.length - 1"
+                                        class="w-7 h-7 flex items-center justify-center rounded-full bg-slate-200 hover:bg-slate-300 cursor-pointer"
+                                        title="Pindah ke bawah">
+                                        <MoveDown class="w-4 h-4 text-slate-700" />
+                                    </button>
+                                </div>
+
+                                <button @click="duplicateField(i)"
+                                    class="text-blue-500 text-sm hover:underline cursor-pointer">
+                                    <Copy />
+                                </button>
+                                <button @click="removeField(i)" v-if="fields.length > 1"
+                                    class="text-red-500 text-sm hover:underline cursor-pointer">
+                                    <Trash2 />
+                                </button>
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
@@ -86,6 +107,7 @@
                                     <option value="textarea">Textarea</option>
                                     <option value="number">Number</option>
                                     <option value="date">Date</option>
+                                    <option value="date-range">Daterange</option>
                                     <option value="month">Month</option>
                                     <option value="year">Year</option>
                                     <option value="time">Time</option>
@@ -117,10 +139,17 @@
                         </div>
 
                         <div class="mt-3 flex items-center">
-                            <input v-model="field.required" type="checkbox"
-                                class="h-4 w-4 text-blue-600 border-gray-300 rounded" />
-                            <label class="ml-2 text-sm text-gray-700">Required</label>
+                            <input v-model="field.required" type="checkbox" :id="'required-' + i"
+                                class="h-4 w-4 text-blue-600 border-gray-300 rounded cursor-pointer" />
+                            <label :for="'required-' + i"
+                                class="ml-2 text-sm text-gray-700 cursor-pointer">Required</label>
                         </div>
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button @click="addField" class="text-slate-700 text-sm hover:underline cursor-pointer">
+                            + Tambah Field
+                        </button>
                     </div>
                 </div>
 
@@ -139,7 +168,7 @@
                         ghost-class="opacity-50" class="space-y-2">
                         <template #item="{ element: col, index: i }">
                             <div
-                                class="grid grid-cols-[auto_1fr_1fr_1fr_1fr_1fr_auto] items-center gap-2 border rounded p-2 bg-gray-50 hover:bg-gray-100 transition">
+                                class="grid grid-cols-[auto_1fr_1fr_1fr_1fr_1fr_auto_auto] items-center gap-2 border rounded p-2 bg-gray-50 hover:bg-gray-100 transition">
                                 <span class="drag-handle cursor-move text-gray-400 hover:text-gray-600 select-none"
                                     title="Geser urutan">☰</span>
                                 <input v-model="col.text" placeholder="text (contoh: Nama)"
@@ -153,9 +182,16 @@
                                     class="border p-2 rounded w-full" />
                                 <input v-model="col.model" placeholder="model (contoh: name)"
                                     class="border p-2 rounded w-full" />
+                                <button @click="duplicateColumn(i)"
+                                    class="text-blue-500 hover:text-blue-700 transition flex items-center justify-center cursor-pointer"
+                                    title="Hapus kolom">
+                                    <Copy />
+                                </button>
                                 <button @click="removeColumn(i)"
-                                    class="text-red-500 hover:text-red-700 transition flex items-center justify-center px-3 py-2"
-                                    title="Hapus kolom">✖</button>
+                                    class="text-red-500 hover:text-red-700 transition flex items-center justify-center cursor-pointer"
+                                    title="Hapus kolom">
+                                    <X />
+                                </button>
                             </div>
                         </template>
                     </draggable>
@@ -256,6 +292,7 @@ import { generateTableBase } from "@/utils/generateTableFile";
 import { generateStoreFile } from "@/utils/generateStoreFile";
 import { generateTypeFile } from "@/utils/generateTypeFile";
 import { generateNewTabFormFile } from "@/utils/generateNewTabFormFile";
+import { Copy, MoveDown, MoveUp, Trash2, X } from "lucide-vue-next";
 
 // ========== STATE ==========
 const formTitle = ref("Karyawan");
@@ -271,8 +308,18 @@ onMounted(() => {
     addColumn();
 })
 
+interface Field {
+    name: string;
+    label: string;
+    type: string;
+    placeholder: string;
+    validationMessage: string;
+    class: string;
+    required: boolean;
+}
+
 // 🔹 Tambahan: Form Fields
-const fields = ref([
+const fields = ref<Field[]>([
     {
         name: "name",
         label: "Nama",
@@ -349,6 +396,20 @@ function addColumn() {
 function removeColumn(i: number) {
     columns.value.splice(i, 1);
 }
+
+function duplicateColumn(i: number) {
+    const original = columns.value[i];
+    const duplicated = {
+        id: Date.now(),
+        text: original?.text ?? '',
+        sortBy: original?.sortBy ?? '',
+        sortColumn: original?.sortColumn ?? false,
+        class: original?.class ?? '',
+        model: original?.model ?? '',
+    };
+    columns.value.push(duplicated);
+}
+
 function addField() {
     fields.value.push({
         name: "",
@@ -363,6 +424,39 @@ function addField() {
 function removeField(i: number) {
     fields.value.splice(i, 1);
 }
+
+function duplicateField(i: number) {
+    const original = fields.value[i];
+    const duplicated = {
+        name: original?.name ?? '',
+        label: original?.label ?? '',
+        type: original?.type ?? '',
+        placeholder: original?.placeholder ?? '',
+        validationMessage: original?.validationMessage ?? '',
+        class: original?.class ?? '',
+        required: original?.required ?? true,
+    };
+    fields.value.push(duplicated);
+}
+
+function moveUp(index: number) {
+    if (index === 0) return;
+    const temp = fields.value[index];
+    const prev = fields.value[index - 1];
+    if (!temp || !prev) return; // Guard clause
+    fields.value[index] = prev;
+    fields.value[index - 1] = temp;
+}
+
+function moveDown(index: number) {
+    if (index === fields.value.length - 1) return;
+    const temp = fields.value[index];
+    const next = fields.value[index + 1];
+    if (!temp || !next) return; // Guard clause
+    fields.value[index] = next;
+    fields.value[index + 1] = temp;
+}
+
 function copyAll() {
     const combined = generatedFiles.value
         .map(file => `// ===== ${file.filename} =====\n${file.content}`)

@@ -1,54 +1,31 @@
+import type { IColumn, IField } from "@/types";
 import { generateFormFile } from "./generateFormFile";
+import { loadAppName } from "@/utils/localStorage";
+import { generateEditAssignments, generateListTableColumn, generatePayloadContent, generateReactiveFields, generateResetFields, generateValidationRules } from "./utils";
 
 export function generateTableBase(
     title: string,
     storeName: string,
-    columns: {
-        text: string;
-        sortBy: string;
-        sortColumn: boolean;
-        class: string;
-        model: string;
-    }[] = [],
-    fields: {
-        name: string;
-        label: string;
-        type: string;
-        placeholder: string;
-        validationMessage: string;
-        class: string;
-        required: boolean;
-    }[]
+    columns: IColumn[] = [],
+    fields: IField[]
 ) {
     // generate isi reactive `single`
-    const reactiveFields = fields
-        .map((f) => `    ${f.name}: '' as ${f.type === 'number' ? 'number' : 'string'},`)
-        .join("\n");
+    const reactiveFields = generateReactiveFields(fields);
 
     // generate validation rules
-    const validationRules = fields
-        .map((f) => `        ${f.name}: { required },`)
-        .join("\n");
+    const validationRules = generateValidationRules(fields);
 
     // generate payload content
-    const payloadContent = fields
-        .map((f) => `        ${f.name}: single.${f.name},`)
-        .join("\n");
+    const payloadContent = generatePayloadContent(fields)
 
     // generate edit data assignment
-    const editAssignments = fields
-        .map((f) => `        single.${f.name} = data.${f.name}`)
-        .join("\n");
+    const editAssignments = generateEditAssignments(fields)
 
     // generate reset() clear
-    const resetFields = fields
-        .map((f) => `    single.${f.name} = '';`)
-        .join("\n");
+    const resetFields = generateResetFields(fields)
 
     // generate list data table
-    const listTableColumn = columns
-        .map((c) => `                                        <td class="text-center">{{ context.${c.model} }}</td>`)
-        .join("\n");
+    const listTableColumn = generateListTableColumn(columns)
 
     // ubah awalan storeName jadi huruf kecil (camelCase)
     const camelStoreName = storeName.charAt(0).toLowerCase() + storeName.slice(1);
@@ -67,7 +44,7 @@ export function generateTableBase(
     return `<script setup lang="ts">
 import { onMounted, reactive, watch, ref, computed } from 'vue';
 import { use${storeName}Store } from "@/stores/${camelStoreName}";
-import { CustomModal, DataTable, ModalBody, ModalFooter, SelectSingle, SelectMultiple, FileUpload } from '@/components/main';
+import { CustomModal, DataTable, ErrorFormValidation, ModalBody, ModalFooter, SelectSingle, SelectMultiple, FileUpload } from '@/components/main';
 import { axiosHandleError, initializeAppPlugins, loaderHide, loaderShow } from '@/plugins/global';
 import { ISelectOption } from '@/types/global';
 import { useSelectListStore } from '@/stores/selectList';
@@ -220,7 +197,7 @@ ${resetFields}
                         <div class="card-header p-0 border-0 align-items-center">
                             <div class="align-items-start flex-column">
                                 <p class="card-label mb-2 p-0">${title}</p>
-                                <p class="card-desc p-0">Berikut Merupakan ${title}</p>
+                                <p class="card-desc p-0">Berikut Merupakan Data ${title} di ${loadAppName()}</p>
                             </div>
                             <button type="button" class="btn h-50 btn-primary text-white" @click="showModalAdd">
                                 Tambah Data

@@ -36,12 +36,14 @@ export function generateFormFile(
     />`;
 
             case "date":
+            case "date-range":
             case "month":
             case "year":
             case "time":
                 return `
     <app-datepicker
         v-model:value="single.${f.name}"
+        ${f.type === "date-range" ? "range" : ""}
         :id="'${f.name}'"
         :placeholder="'${f.placeholder}'"
         format="${f.type === "time"
@@ -97,9 +99,7 @@ export function generateFormFile(
 
     const renderField = (f: any) => {
         const errorBlock = `
-    <div v-if="v$.single.${f.name}.$error" class="text-danger">
-        ${f.validationMessage}
-    </div>`;
+    <ErrorFormValidation :vfield="v$.single.${f.name}" label="${f.label}" />`;
 
         const requiredMark = f.required ? `<span class="text-danger">*</span>` : "";
 
