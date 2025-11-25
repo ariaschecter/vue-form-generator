@@ -18,7 +18,7 @@
                 <!-- 🔹 Judul Form -->
                 <div>
                     <label class="block font-semibold text-gray-700 mb-1">Judul Form</label>
-                    <input v-model="formTitle" type="text"
+                    <input v-model="single.formTitle" type="text"
                         class="border border-gray-300 rounded-lg w-full p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         placeholder="Contoh: Riwayat Pembelian" />
                 </div>
@@ -28,21 +28,21 @@
                 <!-- 🔹 Store Information -->
                 <div>
                     <label class="block font-semibold text-gray-700 mb-1">Nama Store</label>
-                    <input v-model="storeName" type="text"
+                    <input v-model="single.storeName" type="text"
                         class="border border-gray-300 rounded-lg w-full p-2.5 focus:ring-2 focus:ring-blue-500"
                         placeholder="Contoh: FormSubmission" />
                 </div>
 
                 <div>
                     <label class="block font-semibold text-gray-700 mb-1">Prefix API</label>
-                    <input v-model="prefix" type="text"
+                    <input v-model="single.prefix" type="text"
                         class="border border-gray-300 rounded-lg w-full p-2.5 focus:ring-2 focus:ring-blue-500"
                         placeholder="api-web" />
                 </div>
 
                 <div>
                     <label class="block font-semibold text-gray-700 mb-1">Resource Path</label>
-                    <input v-model="resource" type="text"
+                    <input v-model="single.resource" type="text"
                         class="border border-gray-300 rounded-lg w-full p-2.5 focus:ring-2 focus:ring-blue-500"
                         placeholder="/form-submission" />
                 </div>
@@ -55,21 +55,22 @@
                         <h3 class="font-semibold text-gray-700">🧱 Form Fields</h3>
                     </div>
 
-                    <div v-for="(field, i) in fields" :key="i"
+                    <div v-for="(field, i) in single.fields" :key="i"
                         class="border rounded-lg p-4 mb-3 bg-gray-50 hover:bg-gray-100 transition">
                         <div class="flex justify-between items-center mb-3">
                             <h4 class="font-semibold text-gray-700">Field {{ i + 1 }}</h4>
                             <div class="flex space-x-2">
                                 <div class="p-1 flex space-x-2 me-5">
                                     <!-- Move Up -->
-                                    <button @click="moveUp(i)" v-if="fields.length > 1 && i != 0"
+                                    <button @click="moveUp(i)" v-if="single.fields.length > 1 && i != 0"
                                         class="w-7 h-7 flex items-center justify-center rounded-full bg-slate-200 hover:bg-slate-300 cursor-pointer"
                                         title="Pindah ke atas">
                                         <MoveUp class="w-4 h-4 text-slate-700" />
                                     </button>
 
                                     <!-- Move Down -->
-                                    <button @click="moveDown(i)" v-if="fields.length > 1 && i != fields.length - 1"
+                                    <button @click="moveDown(i)"
+                                        v-if="single.fields.length > 1 && i != single.fields.length - 1"
                                         class="w-7 h-7 flex items-center justify-center rounded-full bg-slate-200 hover:bg-slate-300 cursor-pointer"
                                         title="Pindah ke bawah">
                                         <MoveDown class="w-4 h-4 text-slate-700" />
@@ -80,7 +81,7 @@
                                     class="text-blue-500 text-sm hover:underline cursor-pointer">
                                     <Copy />
                                 </button>
-                                <button @click="removeField(i)" v-if="fields.length > 1"
+                                <button @click="removeField(i)" v-if="single.fields.length > 1"
                                     class="text-red-500 text-sm hover:underline cursor-pointer">
                                     <Trash2 />
                                 </button>
@@ -161,7 +162,7 @@
                         <h3 class="font-semibold text-gray-700">🧱 Table Columns</h3>
                     </div>
 
-                    <draggable v-model="columns" item-key="id" handle=".drag-handle" animation="200"
+                    <draggable v-model="single.columns" item-key="id" handle=".drag-handle" animation="200"
                         ghost-class="opacity-50" class="space-y-2">
                         <template #item="{ element: col, index: i }">
                             <div
@@ -184,7 +185,7 @@
                                     title="Hapus kolom">
                                     <Copy />
                                 </button>
-                                <button @click="removeColumn(i)" v-if="columns.length > 1"
+                                <button @click="removeColumn(i)" v-if="single.columns.length > 1"
                                     class="text-red-500 hover:text-red-700 transition flex items-center justify-center cursor-pointer"
                                     title="Hapus kolom">
                                     <X />
@@ -208,13 +209,14 @@
 
                     <div class="mb-4">
                         <label class="block font-semibold text-gray-700 mb-1">Normal Fields</label>
-                        <textarea v-model="normalFieldsText" rows="10" placeholder="Contoh:\nid string\nname string"
+                        <textarea v-model="single.normalFieldsText" rows="10"
+                            placeholder="Contoh:\nid string\nname string"
                             class="border border-gray-300 rounded-lg w-full p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-sm"></textarea>
                     </div>
 
                     <div>
                         <label class="block font-semibold text-gray-700 mb-1">Payload Fields (Types)</label>
-                        <textarea v-model="payloadFieldsTextType" rows="10" placeholder="Contoh:\nname string"
+                        <textarea v-model="single.payloadFieldsTextType" rows="10" placeholder="Contoh:\nname string"
                             class="border border-gray-300 rounded-lg w-full p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-sm"></textarea>
                     </div>
                 </div>
@@ -288,7 +290,7 @@
 
 
 <script setup lang="ts">
-import { ref, watch, nextTick, onMounted, computed } from "vue";
+import { ref, watch, nextTick, onMounted, computed, reactive } from "vue";
 import draggable from "vuedraggable";
 import MonacoEditor from "monaco-editor-vue3";
 import { generateTableBase } from "@/utils/generateTableFile";
@@ -296,20 +298,34 @@ import { generateStoreFile } from "@/utils/generateStoreFile";
 import { generateTypeFile } from "@/utils/generateTypeFile";
 import { generateNewTabFormFile } from "@/utils/generateNewTabFormFile";
 import { Copy, MoveDown, MoveUp, Trash2, X } from "lucide-vue-next";
-
-// ========== STATE ==========
-const formTitle = ref("Karyawan");
-const storeName = ref("Employee");
-const prefix = ref("api-web");
-const resource = ref("/employee");
-const columns = ref([{ id: 1, text: "Nama", sortBy: "name", sortColumn: true, class: "w-200px", model: 'name' }]);
-const normalFieldsText = ref("id string\nname string\n");
-const payloadFieldsTextType = ref("name string\n");
-
+import type { IColumn } from "@/types";
 
 onMounted(() => {
     addColumn();
 })
+
+const single = reactive({
+    formTitle: '' as string,
+    storeName: 'Employee' as string,
+    prefix: 'api-web' as string,
+    resource: '/employee' as string,
+    columns: [
+        { id: 1, text: "Nama", sortBy: "name", sortColumn: true, class: "w-200px", model: 'name' }
+    ] as IColumn[],
+    fields: [
+        {
+            name: "name",
+            label: "Nama",
+            type: "text",
+            placeholder: "Masukkan Nama",
+            validationMessage: "",
+            class: "col-12",
+            required: true,
+        }
+    ] as Field[],
+    normalFieldsText: "id string\nname string\n",
+    payloadFieldsTextType: "name string\n",
+});
 
 interface Field {
     name: string;
@@ -320,19 +336,6 @@ interface Field {
     class: string;
     required: boolean;
 }
-
-// 🔹 Tambahan: Form Fields
-const fields = ref<Field[]>([
-    {
-        name: "name",
-        label: "Nama",
-        type: "text",
-        placeholder: "Masukkan Nama",
-        validationMessage: "",
-        class: "col-12",
-        required: true,
-    },
-]);
 
 // TAB FILES
 const generatedFiles = ref<{ filename: string; language: string; content: string }[]>([]);
@@ -368,13 +371,13 @@ function parseFields(text: string) {
 
 // ========== GENERATE ==========
 async function generate() {
-    const indexCode = generateTableBase(formTitle.value, storeName.value, columns.value, fields.value);
-    const storeCode = generateStoreFile(storeName.value, prefix.value, resource.value, columns.value);
+    const indexCode = generateTableBase(single.formTitle, single.storeName, single.columns, single.fields);
+    const storeCode = generateStoreFile(single.storeName, single.prefix, single.resource, single.columns);
 
-    const normalFields = parseFields(normalFieldsText.value);
-    const payloadFields = parseFields(payloadFieldsTextType.value);
-    const typeCode = generateTypeFile(storeName.value, normalFields, payloadFields);
-    const newFormTab = generateNewTabFormFile(formTitle.value, storeName.value, fields.value);
+    const normalFields = parseFields(single.normalFieldsText);
+    const payloadFields = parseFields(single.payloadFieldsTextType);
+    const typeCode = generateTypeFile(single.storeName, normalFields, payloadFields);
+    const newFormTab = generateNewTabFormFile(single.formTitle, single.storeName, single.fields);
 
     await nextTick();
     generatedFiles.value = [
@@ -387,21 +390,21 @@ async function generate() {
 
 // ========== WATCH ==========
 watch(
-    [formTitle, storeName, prefix, resource, columns, normalFieldsText, payloadFieldsTextType, fields],
+    [single],
     generate,
     { deep: true, immediate: true }
 );
 
 // ========== HELPERS ==========
 function addColumn() {
-    columns.value.push({ id: Date.now(), text: "", sortBy: "", sortColumn: false, class: "", model: "" });
+    single.columns.push({ id: Date.now(), text: "", sortBy: "", sortColumn: false, class: "", model: "" });
 }
 function removeColumn(i: number) {
-    columns.value.splice(i, 1);
+    single.columns.splice(i, 1);
 }
 
 function duplicateColumn(i: number) {
-    const original = columns.value[i];
+    const original = single.columns[i];
     const duplicated = {
         id: Date.now(),
         text: original?.text ?? '',
@@ -410,11 +413,11 @@ function duplicateColumn(i: number) {
         class: original?.class ?? '',
         model: original?.model ?? '',
     };
-    columns.value.push(duplicated);
+    single.columns.push(duplicated);
 }
 
 function addField() {
-    fields.value.push({
+    single.fields.push({
         name: "",
         label: "",
         type: "text",
@@ -425,11 +428,11 @@ function addField() {
     });
 }
 function removeField(i: number) {
-    fields.value.splice(i, 1);
+    single.fields.splice(i, 1);
 }
 
 function duplicateField(i: number) {
-    const original = fields.value[i];
+    const original = single.fields[i];
     const duplicated = {
         name: original?.name ?? '',
         label: original?.label ?? '',
@@ -439,25 +442,25 @@ function duplicateField(i: number) {
         class: original?.class ?? '',
         required: original?.required ?? true,
     };
-    fields.value.push(duplicated);
+    single.fields.push(duplicated);
 }
 
 function moveUp(index: number) {
     if (index === 0) return;
-    const temp = fields.value[index];
-    const prev = fields.value[index - 1];
+    const temp = single.fields[index];
+    const prev = single.fields[index - 1];
     if (!temp || !prev) return; // Guard clause
-    fields.value[index] = prev;
-    fields.value[index - 1] = temp;
+    single.fields[index] = prev;
+    single.fields[index - 1] = temp;
 }
 
 function moveDown(index: number) {
-    if (index === fields.value.length - 1) return;
-    const temp = fields.value[index];
-    const next = fields.value[index + 1];
+    if (index === single.fields.length - 1) return;
+    const temp = single.fields[index];
+    const next = single.fields[index + 1];
     if (!temp || !next) return; // Guard clause
-    fields.value[index] = next;
-    fields.value[index + 1] = temp;
+    single.fields[index] = next;
+    single.fields[index + 1] = temp;
 }
 
 function copyAll() {

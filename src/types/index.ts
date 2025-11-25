@@ -9,6 +9,7 @@ export interface IField {
 }
 
 export interface IColumn {
+    id?: number;
     text: string;
     sortBy: string;
     sortColumn: boolean;
