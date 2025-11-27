@@ -38,7 +38,7 @@ export function generateTableBase(
 
     const generatedFormFields = generateFormFile(fields)
         .split('\n')
-        .map((line, i) => (i === 0 ? line : ' '.repeat(12) + line))
+        .map((line, i) => (i === 0 ? line : ' '.repeat(20) + line))
         .join('\n');
 
     return `<script setup lang="ts">
@@ -260,7 +260,8 @@ ${listTableColumn}
         <CustomModal ref="modalForm" :title="\`\${flag === 'insert' ? 'Tambah Data ${title}' : 'Edit Data ${title}'}\`" :subtitle="\`Silahkan lengkapi form berikut untuk
                 \${flag === 'insert' ? 'menambah' : 'memperbarui'} data\`" size="">
             <ModalBody>
-${generatedFormFields}
+                <div class="row">${generatedFormFields}
+                </div>
             </ModalBody>
             <ModalFooter>
                 <button type="button" class="btn btn-light text-gray-700" data-bs-dismiss="modal">Batal</button>

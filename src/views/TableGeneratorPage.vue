@@ -12,6 +12,24 @@
                         Isi informasi di bawah untuk membuat form, store, & type otomatis.
                     </p>
                 </div>
+                <div class="flex gap-3">
+                    <!-- COPY BUTTON -->
+                    <button
+                        class="px-4 py-2 rounded-lg bg-slate-600 text-white flex items-center gap-2  hover:bg-slate-700 active:bg-slate-800 transition cursor-pointer"
+                        @click="copySingle">
+                        <Copy class="w-4 h-4" />
+                        Copy
+                    </button>
+
+                    <!-- IMPORT BUTTON -->
+                    <button
+                        class="px-4 py-2 rounded-lg bg-cyan-600 text-white flex items-center gap-2 hover:bg-cyan-700 active:bg-cyan-800 transition cursor-pointer"
+                        @click="openModalImport">
+                        <Import class="w-4 h-4" />
+                        Import
+                    </button>
+                </div>
+
             </div>
 
             <div class="space-y-5 flex-grow p-2">
@@ -285,20 +303,204 @@
             </div>
         </div>
 
+        <!-- Modal -->
+        <div v-if="isOpen" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-xl shadow-xl w-[67%] p-6">
+                <h2 class="text-xl font-semibold mb-4">Import JSON</h2>
+
+                <!-- Textarea JSON -->
+                <textarea ref="jsonInputRef" v-model="jsonInput"
+                    class="w-full h-[50vh] border border-slate-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Tempelkan JSON di sini..." autofocus></textarea>
+
+                <!-- Action buttons -->
+                <div class="mt-5 flex justify-end gap-3">
+                    <button class="px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-100" @click="closeModal">
+                        Batal
+                    </button>
+
+                    <button class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700" @click="importJson">
+                        Import
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </div>
 </template>
 
 
 <script setup lang="ts">
-import { ref, watch, nextTick, onMounted, computed, reactive } from "vue";
+import { ref, watch, nextTick, onMounted, computed, reactive, toRaw } from "vue";
 import draggable from "vuedraggable";
 import MonacoEditor from "monaco-editor-vue3";
 import { generateTableBase } from "@/utils/generateTableFile";
 import { generateStoreFile } from "@/utils/generateStoreFile";
 import { generateTypeFile } from "@/utils/generateTypeFile";
 import { generateNewTabFormFile } from "@/utils/generateNewTabFormFile";
-import { Copy, MoveDown, MoveUp, Trash2, X } from "lucide-vue-next";
+import { Copy, Import, MoveDown, MoveUp, Trash2, X } from "lucide-vue-next";
 import type { IColumn } from "@/types";
+import { toast } from "vue3-toastify";
+
+const isOpen = ref(false);
+const jsonInput = ref("");
+const jsonInputRef = ref<HTMLTextAreaElement | null>(null);
+
+interface ISingle {
+    formTitle: string;
+    storeName: string;
+    prefix: string;
+    resource: string;
+    columns: IColumn[];
+    fields: Field[];
+    normalFieldsText: string;
+    payloadFieldsTextType: string;
+}
+
+function toSingleLineJSON(obj: any): string {
+    const indentUnit = "  ";
+
+    function isPlainObject(v: any) {
+        return typeof v === "object" && v !== null && !Array.isArray(v);
+    }
+
+    function build(value: any, indentLevel = 0): string {
+        const indent = indentUnit.repeat(indentLevel);
+
+        // Array handling
+        if (Array.isArray(value)) {
+            if (value.length === 0) return "[]";
+
+            const allPlain = value.every((el) => isPlainObject(el));
+            if (allPlain) {
+                // each object in one line
+                const lines = value.map((it) => {
+                    const singleLine = JSON.stringify(it);
+                    return indentUnit.repeat(indentLevel + 1) + singleLine;
+                });
+                return "[\n" + lines.join(",\n") + "\n" + indent + "]";
+            }
+
+            // mixed arrays: recurse
+            const lines = value.map((it) => indentUnit.repeat(indentLevel + 1) + build(it, indentLevel + 1));
+            return "[\n" + lines.join(",\n") + "\n" + indent + "]";
+        }
+
+        // Object handling
+        if (isPlainObject(value)) {
+            const keys = Object.keys(value);
+            if (keys.length === 0) return "{}";
+            const props = keys.map((k) => {
+                const v = value[k];
+                return `${indentUnit.repeat(indentLevel + 1)}"${k}": ${build(v, indentLevel + 1)}`;
+            });
+            return "{\n" + props.join(",\n") + "\n" + indent + "}";
+        }
+
+        // primitives
+        return JSON.stringify(value);
+    }
+
+    return build(obj, 0);
+}
+
+function isEmptyRow(row: Record<string, any>): boolean {
+    return Object.values(row).every((v) => {
+        if (v === null || v === undefined) return true;
+        if (typeof v === "string") return v.trim() === "";
+        if (typeof v === "number") return v === 0;
+        if (typeof v === "boolean") return v === false;
+        if (Array.isArray(v)) return v.length === 0;
+        if (typeof v === "object") return Object.keys(v).length === 0;
+        return false;
+    });
+}
+
+const copySingle = (): void => {
+    let raw: any;
+
+    try {
+        raw = typeof toRaw === "function" ? toRaw(single) : JSON.parse(JSON.stringify(single));
+    } catch {
+        try {
+            // @ts-ignore structuredClone may or may not exist
+            raw = typeof structuredClone === "function" ? structuredClone(single) : JSON.parse(JSON.stringify(single));
+        } catch {
+            raw = JSON.parse(JSON.stringify(single));
+        }
+    }
+
+    // hapus row kosong pada columns & fields (jika array)
+    if (Array.isArray(raw.columns)) {
+        raw.columns = raw.columns.filter((c: any) => !isEmptyRow(c));
+    }
+    if (Array.isArray(raw.fields)) {
+        raw.fields = raw.fields.filter((f: any) => !isEmptyRow(f));
+    }
+
+    const payload = toSingleLineJSON(raw);
+
+    navigator.clipboard.writeText(payload)
+        .then(() => {
+            toast?.success?.("payload berhasil disalin!");
+        })
+        .catch((err) => {
+            console.error("clipboard error:", err);
+            toast?.error?.("Gagal menyalin payload");
+        });
+};
+
+const openModalImport = () => {
+    isOpen.value = true;
+
+    // tunggu DOM render → baru fokus
+    nextTick(() => {
+        jsonInputRef.value?.focus();
+    });
+};
+
+const closeModal = () => {
+    jsonInput.value = "";
+    isOpen.value = false;
+};
+
+const importJson = () => {
+    try {
+        const parsed = JSON.parse(jsonInput.value) as Partial<ISingle>;
+
+        (Object.keys(parsed) as (keyof ISingle)[]).forEach(key => {
+            const value = parsed[key];
+
+            if (value === undefined) return; // skip undef
+
+            // Jika array
+            if (Array.isArray(single[key]) && Array.isArray(value)) {
+                single[key] = [...value] as any;
+                return;
+            }
+
+            // Jika object tapi bukan array
+            if (
+                typeof single[key] === "object" &&
+                single[key] !== null &&
+                !Array.isArray(single[key]) &&
+                typeof value === "object"
+            ) {
+                Object.assign(single[key] as any, value);
+                return;
+            }
+
+            // Primitive value
+            single[key] = value as any;
+        });
+
+        toast.success("Import JSON berhasil!")
+        closeModal();
+    } catch (err) {
+        toast.error("JSON tidak valid!");
+    }
+};
+
 
 onMounted(() => {
     addColumn();
@@ -325,7 +527,7 @@ const single = reactive({
     ] as Field[],
     normalFieldsText: "id string\nname string\n",
     payloadFieldsTextType: "name string\n",
-});
+} as ISingle);
 
 interface Field {
     name: string;
@@ -468,6 +670,6 @@ function copyAll() {
         .map(file => `// ===== ${file.filename} =====\n${file.content}`)
         .join("\n\n");
     navigator.clipboard.writeText(combined);
-    alert("✅ Semua file berhasil disalin!");
+    toast.success("Semua file berhasil disalin!")
 }
 </script>

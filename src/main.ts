@@ -3,6 +3,7 @@ import App from "./App.vue";
 import router from "./router";
 import "./style.css"; // TailwindCSS
 
+import 'vue3-toastify/dist/index.css';
 // misal di main.ts atau di file yg akses MonacoEnvironment
 declare global {
     interface Window {
