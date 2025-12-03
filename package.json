@@ -10,10 +10,12 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.16",
+    "lucide-vue-next": "^0.554.0",
     "monaco-editor-vue3": "^1.0.4",
     "tailwindcss": "^4.1.16",
     "vue": "^3.5.22",
     "vue-router": "^4.6.3",
+    "vue3-toastify": "^0.2.8",
     "vuedraggable": "^4.1.0"
   },
   "devDependencies": {

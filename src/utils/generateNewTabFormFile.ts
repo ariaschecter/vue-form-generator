@@ -152,7 +152,7 @@ ${payload}
                             <ArrowBackIcon />
                             &ensp;Kembali
                         </button>
-                        <button class="btn btn-app-primary btn-sm text-white" type="button" @click="saveData()">
+                        <button class="btn btn-primary btn-sm text-white" type="button" @click="saveData()">
                             <SaveIcon />
                             &ensp;Simpan Data
                         </button>

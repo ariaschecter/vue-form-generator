@@ -15,17 +15,21 @@
                 <div class="mb-6">
                     <div class="flex justify-between items-center mb-2">
                         <h3 class="font-semibold text-gray-700">Form Fields</h3>
-                        <button @click="addField" class="text-blue-600 text-sm hover:underline">
-                            + Tambah Field
-                        </button>
                     </div>
 
                     <div v-for="(field, i) in fields" :key="i" class="border rounded-lg p-4 mb-3 bg-gray-50">
                         <div class="flex justify-between items-center mb-3">
                             <h4 class="font-semibold text-gray-700">Field {{ i + 1 }}</h4>
-                            <button @click="removeField(i)" class="text-red-500 text-sm hover:underline">
-                                ✖ Hapus
-                            </button>
+                            <div class="flex space-x-2">
+                                <button @click="duplicateField(i)"
+                                    class="text-blue-500 text-sm hover:underline cursor-pointer">
+                                    <Copy />
+                                </button>
+                                <button @click="removeField(i)" v-if="fields.length > 1"
+                                    class="text-red-500 text-sm hover:underline cursor-pointer">
+                                    <Trash2 />
+                                </button>
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
@@ -48,6 +52,7 @@
                                     <option value="textarea">Textarea</option>
                                     <option value="number">Number</option>
                                     <option value="date">Date</option>
+                                    <option value="date-range">Daterange</option>
                                     <option value="month">Month</option>
                                     <option value="year">Year</option>
                                     <option value="time">Time</option>
@@ -67,8 +72,8 @@
                             <div>
                                 <label class="block text-sm font-medium mb-1">Validation Message</label>
                                 <input v-model="field.validationMessage" type="text"
-                                    class="border border-gray-300 rounded-lg w-full p-2"
-                                    placeholder="API Key tidak boleh kosong" />
+                                    class="border border-gray-300 rounded-lg w-full p-2" placeholder="disabled"
+                                    disabled />
                             </div>
 
                             <div>
@@ -83,6 +88,12 @@
                                 class="h-4 w-4 text-blue-600 border-gray-300 rounded" />
                             <label class="ml-2 text-sm text-gray-700">Required</label>
                         </div>
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button @click="addField" class="text-slate-700 text-sm hover:underline cursor-pointer">
+                            + Tambah Field
+                        </button>
                     </div>
                 </div>
             </div>
@@ -111,6 +122,7 @@
 import { ref, watch } from "vue";
 import MonacoEditor from "monaco-editor-vue3";
 import { generateFormFile } from "@/utils/generateFormFile";
+import { Copy, Trash2 } from "lucide-vue-next";
 
 const fields = ref([
     {
@@ -118,7 +130,7 @@ const fields = ref([
         label: "Nama",
         type: "text",
         placeholder: "Masukkan Nama",
-        validationMessage: "Nama tidak boleh kosong",
+        validationMessage: "",
         class: "col-12",
         required: true,
     },
@@ -149,6 +161,21 @@ function addField() {
 function removeField(i: number) {
     fields.value.splice(i, 1);
 }
+
+function duplicateField(i: number) {
+    const original = fields.value[i];
+    const duplicated = {
+        name: original?.name ?? '',
+        label: original?.label ?? '',
+        type: original?.type ?? '',
+        placeholder: original?.placeholder ?? '',
+        validationMessage: original?.validationMessage ?? '',
+        class: original?.class ?? '',
+        required: original?.required ?? true,
+    };
+    fields.value.push(duplicated);
+}
+
 
 function copyCode() {
     navigator.clipboard.writeText(generatedCode.value);
