@@ -334,7 +334,7 @@
 import { ref, watch, nextTick, onMounted, computed, reactive, toRaw } from "vue";
 import draggable from "vuedraggable";
 import MonacoEditor from "monaco-editor-vue3";
-import { generateIndexV2, generateTableBase, generateTableFormV2, generateTableTableV2 } from "@/utils/generateTableFile";
+import { generateIndexV2, generateTableFormV2, generateTableTableV2 } from "@/utils/generateTableFile";
 import { generateStoreFile } from "@/utils/generateStoreFile";
 import { generateTypeFile } from "@/utils/generateTypeFile";
 import { generateNewTabFormFile } from "@/utils/generateNewTabFormFile";

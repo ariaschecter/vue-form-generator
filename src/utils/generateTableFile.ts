@@ -298,41 +298,41 @@ ${listTableColumn}
 
 export function generateIndexV2(
     title: string,
-    storeName: string,
-    columns: IColumn[] = [],
-    fields: IField[]
+    _storeName: string,
+    _columns: IColumn[] = [],
+    _fields: IField[]
 ) {
     // generate isi reactive `single`
-    const reactiveFields = generateReactiveFields(fields);
+    // const reactiveFields = generateReactiveFields(fields);
 
     // generate validation rules
-    const validationRules = generateValidationRules(fields);
+    // const validationRules = generateValidationRules(fields);
 
     // generate payload content
-    const payloadContent = generatePayloadContent(fields)
+    // const payloadContent = generatePayloadContent(fields)
 
     // generate edit data assignment
-    const editAssignments = generateEditAssignments(fields)
+    // const editAssignments = generateEditAssignments(fields)
 
     // generate reset() clear
-    const resetFields = generateResetFields(fields)
+    // const resetFields = generateResetFields(fields)
 
     // generate list data table
-    const listTableColumn = generateListTableColumn(columns)
+    // const listTableColumn = generateListTableColumn(columns)
 
     // ubah awalan storeName jadi huruf kecil (camelCase)
-    const camelStoreName = storeName.charAt(0).toLowerCase() + storeName.slice(1);
+    // const camelStoreName = storeName.charAt(0).toLowerCase() + storeName.slice(1);
 
-    const kebabStoreName = storeName
-        .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
-        .replace(/([A-Z])([A-Z][a-z])/g, "$1-$2")
-        .toLowerCase();
+    // const kebabStoreName = storeName
+    //     .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+    //     .replace(/([A-Z])([A-Z][a-z])/g, "$1-$2")
+    //     .toLowerCase();
 
 
-    const generatedFormFields = generateFormFile(fields)
-        .split('\n')
-        .map((line, i) => (i === 0 ? line : ' '.repeat(20) + line))
-        .join('\n');
+    // const generatedFormFields = generateFormFile(fields)
+    //     .split('\n')
+    //     .map((line, i) => (i === 0 ? line : ' '.repeat(20) + line))
+    //     .join('\n');
 
     return `<script setup lang="ts">
 import { ref, onMounted } from 'vue'
@@ -410,7 +410,7 @@ onMounted(() => {
 export function generateTableFormV2(
     title: string,
     storeName: string,
-    columns: IColumn[] = [],
+    _columns: IColumn[] = [],
     fields: IField[]
 ) {
     // generate isi reactive `single`
@@ -420,7 +420,7 @@ export function generateTableFormV2(
     const validationRules = generateValidationRules(fields);
 
     // generate payload content
-    const payloadContent = generatePayloadContent(fields)
+    // const payloadContent = generatePayloadContent(fields)
 
     // generate edit data assignment
     const editAssignments = generateEditAssignments(fields)
@@ -429,7 +429,7 @@ export function generateTableFormV2(
     const resetFields = generateResetFields(fields)
 
     // generate list data table
-    const listTableColumn = generateListTableColumn(columns)
+    // const listTableColumn = generateListTableColumn(columns)
 
     // ubah awalan storeName jadi huruf kecil (camelCase)
     const camelStoreName = storeName.charAt(0).toLowerCase() + storeName.slice(1);
@@ -559,25 +559,25 @@ defineExpose({ openAdd, openEdit })
 }
 
 export function generateTableTableV2(
-    title: string,
+    _title: string,
     storeName: string,
     columns: IColumn[] = [],
-    fields: IField[]
+    _fields: IField[]
 ) {
     // generate isi reactive `single`
-    const reactiveFields = generateReactiveFields(fields);
+    // const reactiveFields = generateReactiveFields(fields);
 
     // generate validation rules
-    const validationRules = generateValidationRules(fields);
+    // const validationRules = generateValidationRules(fields);
 
     // generate payload content
-    const payloadContent = generatePayloadContent(fields)
+    // const payloadContent = generatePayloadContent(fields)
 
     // generate edit data assignment
-    const editAssignments = generateEditAssignments(fields)
+    // const editAssignments = generateEditAssignments(fields)
 
     // generate reset() clear
-    const resetFields = generateResetFields(fields)
+    // const resetFields = generateResetFields(fields)
 
     // generate list data table
     const listTableColumn = generateListTableColumn(columns, 20)
@@ -585,16 +585,16 @@ export function generateTableTableV2(
     // ubah awalan storeName jadi huruf kecil (camelCase)
     const camelStoreName = storeName.charAt(0).toLowerCase() + storeName.slice(1);
 
-    const kebabStoreName = storeName
-        .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
-        .replace(/([A-Z])([A-Z][a-z])/g, "$1-$2")
-        .toLowerCase();
+    // const kebabStoreName = storeName
+    //     .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+    //     .replace(/([A-Z])([A-Z][a-z])/g, "$1-$2")
+    //     .toLowerCase();
 
 
-    const generatedFormFields = generateFormFile(fields)
-        .split('\n')
-        .map((line, i) => (i === 0 ? line : ' '.repeat(20) + line))
-        .join('\n');
+    // const generatedFormFields = generateFormFile(fields)
+    //     .split('\n')
+    //     .map((line, i) => (i === 0 ? line : ' '.repeat(20) + line))
+    //     .join('\n');
 
     return `<script setup lang="ts">
 import { use${storeName}Store } from "@/stores/${camelStoreName}";
