@@ -183,10 +183,10 @@ export function generateResetFields(fields: IField[]): string {
         .join("\n");
 }
 
-export function generateListTableColumn(columns: IColumn[]): string {
+export function generateListTableColumn(columns: IColumn[], space: number = 40): string {
     return columns
         .map((c) => {
-            return `${' '.repeat(40)}<td class="text-center">{{ context.${c.model} }}</td>`;
+            return `${' '.repeat(space)}<td class="text-center">{{ context.${c.model} }}</td>`;
         })
         .join("\n");
 }

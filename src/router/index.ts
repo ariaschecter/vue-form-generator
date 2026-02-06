@@ -3,15 +3,17 @@ import HomePage from "@/views/HomePage.vue";
 import StoreGeneratorPage from "@/views/StoreGeneratorPage.vue";
 import TypeGeneratorPage from "@/views/TypeGeneratorPage.vue";
 import TableGeneratorPage from "@/views/TableGeneratorPage.vue";
-import FormGeneratorPageV2 from "@/views/FormGeneratorPageV2.vue";
+import TableGeneratorPageV2 from "@/views/TableGeneratorPageV2.vue";
+import FormGeneratorPageV1 from "@/views/FormGeneratorPageV1.vue";
 import SettingPage from "@/views/SettingPage.vue";
 
 const routes = [
     { path: "/", name: "home", component: HomePage },
     { path: "/store", name: "store", component: StoreGeneratorPage },
     { path: "/type", name: "type", component: TypeGeneratorPage },
-    { path: "/form-v2", name: "form-v2", component: FormGeneratorPageV2 },
-    { path: "/table", name: "form", component: TableGeneratorPage },
+    { path: "/form-v2", name: "form-v2", component: FormGeneratorPageV1 },
+    { path: "/table-v1", name: "table-v1", component: TableGeneratorPage },
+    { path: "/table-v2", name: "table-v2", component: TableGeneratorPageV2 },
     { path: "/setting", name: "setting", component: SettingPage },
 ];
 

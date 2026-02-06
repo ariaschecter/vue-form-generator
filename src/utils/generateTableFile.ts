@@ -295,3 +295,375 @@ ${listTableColumn}
 }
 </style>`;
 }
+
+export function generateIndexV2(
+    title: string,
+    storeName: string,
+    columns: IColumn[] = [],
+    fields: IField[]
+) {
+    // generate isi reactive `single`
+    const reactiveFields = generateReactiveFields(fields);
+
+    // generate validation rules
+    const validationRules = generateValidationRules(fields);
+
+    // generate payload content
+    const payloadContent = generatePayloadContent(fields)
+
+    // generate edit data assignment
+    const editAssignments = generateEditAssignments(fields)
+
+    // generate reset() clear
+    const resetFields = generateResetFields(fields)
+
+    // generate list data table
+    const listTableColumn = generateListTableColumn(columns)
+
+    // ubah awalan storeName jadi huruf kecil (camelCase)
+    const camelStoreName = storeName.charAt(0).toLowerCase() + storeName.slice(1);
+
+    const kebabStoreName = storeName
+        .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+        .replace(/([A-Z])([A-Z][a-z])/g, "$1-$2")
+        .toLowerCase();
+
+
+    const generatedFormFields = generateFormFile(fields)
+        .split('\n')
+        .map((line, i) => (i === 0 ? line : ' '.repeat(20) + line))
+        .join('\n');
+
+    return `<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+
+import { PlusIcon } from '@/components/icons';
+import BaseTable from './_components/Table.vue'
+import BaseFormModal from './_components/ModalForm.vue'
+
+const tableRef = ref<InstanceType<typeof BaseTable> | null>(null)
+const modalRef = ref<InstanceType<typeof BaseFormModal> | null>(null)
+
+onMounted(() => {
+    tableRef.value?.resetTableData()
+    tableRef.value?.getTableData()
+})
+</script>
+
+<template>
+    <div class="container-fluid">
+        <div class="card mt-8">
+            <div class="card-body">
+                <div class="card card-flush  mb-5 mb-xl-10" id="kt_profile_details_view">
+                    <div class="card card-xl-stretch mb-5 mb-xl-8">
+                        <div class="card-header p-0 border-0 align-items-center">
+                            <div class="align-items-start flex-column">
+                                <p class="card-label mb-2 p-0">${title}</p>
+                                <p class="card-desc p-0">Berikut Merupakan Data ${title} di ${loadAppName()}</p>
+                            </div>
+                            <button type="button" class="btn h-50 btn-app-primary text-white"
+                                @click="modalRef?.openAdd()">
+                                <PlusIcon />
+                                Tambah Data
+                            </button>
+                        </div>
+
+                        <div class="card-body p-0 pt-5">
+                            <BaseTable ref="tableRef" @edit="modalRef?.openEdit($event)" />
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <BaseFormModal ref="modalRef" @submit-success="tableRef?.getTableData()" />
+    </div>
+</template>
+
+<style scoped>
+.card-label {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-style: normal;
+    font-size: 22px;
+    line-height: 35px;
+    letter-spacing: -0.22px;
+    color: #3F4254;
+}
+
+.card-desc {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 26px;
+    letter-spacing: 0%;
+    vertical-align: middle;
+    color: #7E8299;
+}
+</style>
+`;
+}
+
+
+
+export function generateTableFormV2(
+    title: string,
+    storeName: string,
+    columns: IColumn[] = [],
+    fields: IField[]
+) {
+    // generate isi reactive `single`
+    const reactiveFields = generateReactiveFields(fields);
+
+    // generate validation rules
+    const validationRules = generateValidationRules(fields);
+
+    // generate payload content
+    const payloadContent = generatePayloadContent(fields)
+
+    // generate edit data assignment
+    const editAssignments = generateEditAssignments(fields)
+
+    // generate reset() clear
+    const resetFields = generateResetFields(fields)
+
+    // generate list data table
+    const listTableColumn = generateListTableColumn(columns)
+
+    // ubah awalan storeName jadi huruf kecil (camelCase)
+    const camelStoreName = storeName.charAt(0).toLowerCase() + storeName.slice(1);
+
+    const kebabStoreName = storeName
+        .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+        .replace(/([A-Z])([A-Z][a-z])/g, "$1-$2")
+        .toLowerCase();
+
+
+    const generatedFormFields = generateFormFile(fields)
+        .split('\n')
+        .map((line, i) => (i === 0 ? line : ' '.repeat(20) + line))
+        .join('\n');
+
+    return `<script setup lang="ts">
+import { ref, reactive, computed } from 'vue';
+import { use${storeName}Store } from "@/stores/${camelStoreName}";
+import { CustomModal, ErrorFormValidation, ModalBody, ModalFooter, SelectSingle, SelectMultiple, FileUpload } from '@/components/main';
+import { axiosHandleError, loaderHide, loaderShow } from '@/plugins/global';
+import { ISelectOption } from '@/types/global';
+import { useSelectListStore } from '@/stores/selectList';
+import { useVuelidate } from '@vuelidate/core';
+import { required } from '@vuelidate/validators';
+import Swal from 'sweetalert2';
+import { toast } from 'vue3-toastify';
+import { I${storeName}Detail } from '@/types/${kebabStoreName}';
+
+const store = use${storeName}Store();
+const selectListStore = useSelectListStore();
+
+const emit = defineEmits(['submit-success'])
+
+const modalRef = ref<InstanceType<typeof CustomModal> | null>(null)
+const mode = ref<'insert' | 'edit'>('insert')
+
+const form = reactive({
+    id: '' as string,
+${reactiveFields}
+})
+
+const rules = computed(() => ({
+    form: {
+${validationRules}
+    }
+}));
+
+const v$ = useVuelidate(rules, { form });
+
+const reset = () => {
+    v$.value.$reset();
+    flag.value = 'insert';
+    single.id = '';
+${resetFields}
+}
+
+const openAdd = async (): Promise<void> => {
+    reset()
+    modalRef.value?.show()
+}
+
+const openEdit = async (id: string | number): Promise<void> => {
+  try {
+    loaderShow()
+    const res = await store.show(id)
+    const data = res.data.data as I${storeName}Detail
+
+    reset()
+    mode.value = 'edit'
+    form.id = data.id
+${editAssignments}
+
+    modalRef.value?.show()
+  } catch (e) {
+    axiosHandleError(e)
+  } finally {
+    loaderHide()
+  }
+}
+
+const save = async (): Promise<void> => {
+    await v$.value.$validate()
+    if (v$.value.$error) return
+
+  try {
+    loaderShow()
+    mode.value === 'insert'
+      ? await store.create({ name: form.name })
+      : await store.update(form.id, { name: form.name })
+
+    modalRef.value?.hide()
+    emit('submit-success')
+
+    Swal.fire({
+        icon: 'success',
+        title: 'Berhasil!',
+        text: res?.data?.meta?.message
+    })
+  } catch (e) {
+    axiosHandleError(e)
+  } finally {
+    loaderHide()
+  }
+}
+
+defineExpose({ openAdd, openEdit })
+</script>
+
+<template>
+    <CustomModal ref="modalRef" :title="mode === 'insert' ? 'Tambah ${title}' : 'Edit ${title}'" :subtitle="\`Silahkan lengkapi form berikut untuk
+            \${flag === 'insert' ? 'menambah' : 'memperbarui'} data\`" size="">
+        <ModalBody>
+            <div class="row">${generatedFormFields}
+            </div>
+        </ModalBody>
+
+        <ModalFooter>
+            <button class="btn btn-light" @click="modalRef?.hide()">Batal</button>
+            <button class="btn btn-app-primary text-white" @click="save">
+                Simpan
+            </button>
+        </ModalFooter>
+    </CustomModal>
+</template>
+
+<style scoped></style>`;
+}
+
+export function generateTableTableV2(
+    title: string,
+    storeName: string,
+    columns: IColumn[] = [],
+    fields: IField[]
+) {
+    // generate isi reactive `single`
+    const reactiveFields = generateReactiveFields(fields);
+
+    // generate validation rules
+    const validationRules = generateValidationRules(fields);
+
+    // generate payload content
+    const payloadContent = generatePayloadContent(fields)
+
+    // generate edit data assignment
+    const editAssignments = generateEditAssignments(fields)
+
+    // generate reset() clear
+    const resetFields = generateResetFields(fields)
+
+    // generate list data table
+    const listTableColumn = generateListTableColumn(columns, 20)
+
+    // ubah awalan storeName jadi huruf kecil (camelCase)
+    const camelStoreName = storeName.charAt(0).toLowerCase() + storeName.slice(1);
+
+    const kebabStoreName = storeName
+        .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+        .replace(/([A-Z])([A-Z][a-z])/g, "$1-$2")
+        .toLowerCase();
+
+
+    const generatedFormFields = generateFormFile(fields)
+        .split('\n')
+        .map((line, i) => (i === 0 ? line : ' '.repeat(20) + line))
+        .join('\n');
+
+    return `<script setup lang="ts">
+import { use${storeName}Store } from "@/stores/${camelStoreName}";
+import { DataTable } from '@/components/main'
+import { axiosHandleError, loaderShow, loaderHide } from '@/plugins/global'
+import { toast } from 'vue3-toastify'
+import { EditIcon } from '@/components/icons'
+
+const emit = defineEmits<{    
+    (e: 'edit', id: string | number): void
+}>()
+
+const store = use${storeName}Store();
+
+const resetTableData = (): void => {
+    store.resetTable()
+}
+
+const getTableData = (): void => {
+    store.getData()
+}
+
+const changeStatus = async (id: string | number): Promise<void> => {
+    try {
+        loaderShow()
+        const res = await store.changeStatus(id)
+        toast.success(res.data.meta.message)
+    } catch (e) {
+        axiosHandleError(e)
+    } finally {
+        loaderHide()
+    }
+}
+
+defineExpose({ getTableData, resetTableData })
+</script>
+
+<template>
+    <div class="card">
+        <DataTable :config="store.table" @get-data="store.getData"
+            @set-order="(order: string) => store.setOrder(order)"
+            @set-page="(page: number) => store.setCurrentPage(page)"
+            @set-search="(search: string) => store.setSearch(search)"
+            @set-show-per-page="(showPerPage: number) => store.setShowPerPage(showPerPage)"
+            @set-sort-by="(sortBy: string) => store.setSortBy(sortBy)" :is-from-store="true">
+            <template #body>
+                <tr v-for="(row, i) in store.table.data" :key="row.id">
+                    <td class="text-center">
+                        {{ (store.table.currentPage - 1) * store.table.showPerPage + i + 1 }}
+                    </td>
+${listTableColumn}
+                    <td class="text-center">
+                        <div class="text-center w-100 d-flex justify-content-center">
+                            <div
+                                class="form-check form-switch form-check-success form-check-solid justify-content-center">
+                                <input class="form-check-input h-20px w-40px" type="checkbox" value="1"
+                                    :checked="row.isActive" @click="changeStatus(row.id)">
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-secondary" @click="emit('edit', row.id)">
+                            <EditIcon /> Edit
+                        </button>
+                    </td>
+                </tr>
+            </template>
+        </DataTable>
+
+    </div>
+</template>`;
+}
