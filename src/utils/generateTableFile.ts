@@ -423,10 +423,10 @@ export function generateTableFormV2(
     // const payloadContent = generatePayloadContent(fields)
 
     // generate edit data assignment
-    const editAssignments = generateEditAssignments(fields)
+    const editAssignments = generateEditAssignments(fields, 'form', 4)
 
     // generate reset() clear
-    const resetFields = generateResetFields(fields)
+    const resetFields = generateResetFields(fields, 'form')
 
     // generate list data table
     // const listTableColumn = generateListTableColumn(columns)
@@ -440,7 +440,7 @@ export function generateTableFormV2(
         .toLowerCase();
 
 
-    const generatedFormFields = generateFormFile(fields)
+    const generatedFormFields = generateFormFile(fields, 'form')
         .split('\n')
         .map((line, i) => (i === 0 ? line : ' '.repeat(20) + line))
         .join('\n');
@@ -481,8 +481,8 @@ const v$ = useVuelidate(rules, { form });
 
 const reset = () => {
     v$.value.$reset();
-    flag.value = 'insert';
-    single.id = '';
+    mode.value = 'insert';
+    form.id = '';
 ${resetFields}
 }
 
@@ -516,7 +516,7 @@ const save = async (): Promise<void> => {
 
   try {
     loaderShow()
-    mode.value === 'insert'
+    const res = mode.value === 'insert'
       ? await store.create({ name: form.name })
       : await store.update(form.id, { name: form.name })
 
@@ -540,7 +540,7 @@ defineExpose({ openAdd, openEdit })
 
 <template>
     <CustomModal ref="modalRef" :title="mode === 'insert' ? 'Tambah ${title}' : 'Edit ${title}'" :subtitle="\`Silahkan lengkapi form berikut untuk
-            \${flag === 'insert' ? 'menambah' : 'memperbarui'} data\`" size="">
+            \${mode === 'insert' ? 'menambah' : 'memperbarui'} data\`" size="">
         <ModalBody>
             <div class="row">${generatedFormFields}
             </div>
@@ -580,7 +580,7 @@ export function generateTableTableV2(
     // const resetFields = generateResetFields(fields)
 
     // generate list data table
-    const listTableColumn = generateListTableColumn(columns, 20)
+    const listTableColumn = generateListTableColumn(columns, 20, 'row')
 
     // ubah awalan storeName jadi huruf kecil (camelCase)
     const camelStoreName = storeName.charAt(0).toLowerCase() + storeName.slice(1);

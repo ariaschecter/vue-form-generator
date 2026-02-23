@@ -95,7 +95,7 @@ export function generatePayloadContent(fields: IField[]): string {
         .join("\n");
 }
 
-export function generateEditAssignments(fields: IField[]): string {
+export function generateEditAssignments(fields: IField[], prefix: string = 'single', whitespace: number = 8): string {
     return fields
         .map((f) => {
             // ===========================
@@ -133,12 +133,12 @@ export function generateEditAssignments(fields: IField[]): string {
                     text = `data.${f.name}`;
             }
 
-            return `${' '.repeat(8)}single.${f.name} = ${text}`;
+            return `${' '.repeat(whitespace)}${prefix}.${f.name} = ${text}`;
         })
         .join("\n");
 }
 
-export function generateResetFields(fields: IField[]): string {
+export function generateResetFields(fields: IField[], prefix: string = 'single'): string {
     return fields
         .map((f) => {
             // ===========================
@@ -178,15 +178,15 @@ export function generateResetFields(fields: IField[]): string {
                     text = "''";
             }
 
-            return `${' '.repeat(4)}single.${f.name} = ${text};`;
+            return `${' '.repeat(4)}${prefix}.${f.name} = ${text};`;
         })
         .join("\n");
 }
 
-export function generateListTableColumn(columns: IColumn[], space: number = 40): string {
+export function generateListTableColumn(columns: IColumn[], space: number = 40, prefix: string = 'context'): string {
     return columns
         .map((c) => {
-            return `${' '.repeat(space)}<td class="text-center">{{ context.${c.model} }}</td>`;
+            return `${' '.repeat(space)}<td class="text-center">{{ ${prefix}.${c.model} }}</td>`;
         })
         .join("\n");
 }

@@ -11,14 +11,15 @@ export function generateFormFile(
         validationMessage: string;
         class: string;
         required: boolean;
-    }[]
+    }[],
+    prefix: string = 'single'
 ): string {
     const renderInputByType = (f: any) => {
         switch (f.type) {
             case "textarea":
                 return `
     <textarea
-        v-model="single.${f.name}"
+        v-model="${prefix}.${f.name}"
         id="${f.name}"
         class="form-control"
         rows="5"
@@ -28,7 +29,7 @@ export function generateFormFile(
             case "number":
                 return `
     <input
-        v-model="single.${f.name}"
+        v-model="${prefix}.${f.name}"
         type="number"
         id="${f.name}"
         class="form-control"
@@ -42,7 +43,7 @@ export function generateFormFile(
             case "time":
                 return `
     <app-datepicker
-        v-model:value="single.${f.name}"
+        v-model:value="${prefix}.${f.name}"
         ${f.type === "date-range" ? "range" : ""}
         :id="'${f.name}'"
         :placeholder="'${f.placeholder}'"
@@ -69,7 +70,7 @@ export function generateFormFile(
                 return `
     <FileUpload :title="\`Drop files here or click to upload.\`"
         :description="\`${f.placeholder}\`"
-        :selected-files="single.${f.name}" @update:selected-files="(file: File[]) => single.${f.name} = file"
+        :selected-files="${prefix}.${f.name}" @update:selected-files="(file: File[]) => ${prefix}.${f.name} = file"
         :max-files="10" :allowed-extensions="['.jpg', '.png', '.jpeg']"
         :max-size-megabyte="10" />`;
 
@@ -77,7 +78,7 @@ export function generateFormFile(
             case "multiple-select":
                 const capitalizeFormatted = f.name.charAt(0).toUpperCase() + f.name.slice(1);
                 return `
-    <${f.type == 'single-select' ? `SelectSingle` : `SelectMultiple`} v-model="single.${f.name}" :placeholder="'${f.placeholder}'"
+    <${f.type == 'single-select' ? `SelectSingle` : `SelectMultiple`} v-model="${prefix}.${f.name}" :placeholder="'${f.placeholder}'"
         :options="selectListStore.selectList${capitalizeFormatted}"
         @on-search="selectListStore.getSelectList${capitalizeFormatted}"
         :loading="selectListStore.selectListLoading" :show_search="true"
@@ -87,7 +88,7 @@ export function generateFormFile(
                 // TEXT (default)
                 return `
     <input
-        v-model="single.${f.name}"
+        v-model="${prefix}.${f.name}"
         type="${f.type}"
         id="${f.name}"
         class="form-control"
@@ -99,7 +100,7 @@ export function generateFormFile(
 
     const renderField = (f: any) => {
         const errorBlock = `
-    <ErrorFormValidation :vfield="v$.single.${f.name}" label="${f.label}" />`;
+    <ErrorFormValidation :vfield="v$.${prefix}.${f.name}" label="${f.label}" />`;
 
         const requiredMark = f.required ? `<span class="text-danger">*</span>` : "";
 
@@ -108,7 +109,7 @@ export function generateFormFile(
     <label
         for="${f.name}"
         class="form-label"
-        :class="{ 'text-danger': v$.single.${f.name}.$error }"
+        :class="{ 'text-danger': v$.${prefix}.${f.name}.$error }"
     > ${f.label} ${requiredMark}
     </label>${renderInputByType(f)}${errorBlock}
 </div>`;
