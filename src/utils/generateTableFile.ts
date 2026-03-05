@@ -351,29 +351,37 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="container-fluid">
+    <div class="container-xxl">
         <div class="card mt-8">
-            <div class="card-body">
-                <div class="card card-flush  mb-5 mb-xl-10" id="kt_profile_details_view">
-                    <div class="card card-xl-stretch mb-5 mb-xl-8">
-                        <div class="card-header p-0 border-0 align-items-center">
-                            <div class="align-items-start flex-column">
-                                <p class="card-label mb-2 p-0">${title}</p>
-                                <p class="card-desc p-0">Berikut Merupakan Data ${title} di ${loadAppName()}</p>
-                            </div>
-                            <button type="button" class="btn h-50 btn-app-primary text-white"
-                                @click="modalRef?.openAdd()">
-                                <PlusIcon />
-                                Tambah Data
-                            </button>
-                        </div>
 
-                        <div class="card-body p-0 pt-5">
-                            <BaseTable ref="tableRef" @edit="modalRef?.openEdit($event)" />
+            <!-- Header -->
+            <div class="card-header border-0 pt-6 d-flex justify-content-between align-items-center">
 
-                        </div>
-                    </div>
+                <div class="d-flex flex-column">
+                    <h3 class="card-title fw-bolder text-dark mb-1">
+                        ${title}
+                    </h3>
+                    <span class="text-muted fs-6">
+                        Berikut Merupakan Data ${title} di ${loadAppName()}
+                    </span>
                 </div>
+
+                <button
+                    type="button"
+                    class="btn btn-app-primary text-white d-flex align-items-center"
+                    @click="modalRef?.openAdd()"
+                >
+                    <PlusIcon class="me-2"/>
+                    Tambah Data
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="card-body pt-5">
+                <BaseTable
+                    ref="tableRef"
+                    @edit="modalRef?.openEdit($event)"
+                />
             </div>
         </div>
 
